@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        :root {
+            --gps: "";
+            --alert: "";
+        }
+
+        .gps::before,
+        .alert::before {
+            content: "";
+        }
+
+        .gps::before {
+            content: var(--gps);
+            position: relative;
+            display: inline-block;
+        }
+
+        .gps::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 10px;
+            border: 3px solid red;
+            opacity: 0;
+            animation: blinking-glow 1s infinite;
+        }
+
+        @keyframes blinking-glow {
+            0% {
+                opacity: 0;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .alert::before {
+            content: var(--alert);
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('background.png');
+            background-size: cover;
+            background-position: center top;
+            background-repeat: no-repeat;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 50px;
+            color: aliceblue;
+        }
+
+        @media only screen and (max-width: 767px) {
+            body {
+                background-size: 100% auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <h1>GPS Alert System</h1>
+    <h1 class="gps"></h1>
+    <h1 class="alert"></h1>
+
+    <script>
+        var r = document.querySelector(':root');
+
+        function get(theUrl, data) {
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("GET", theUrl, false);
+
+            xmlHttp.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xmlHttp.setRequestHeader('Access-Control-Allow-Origin', '*');
+            xmlHttp.setRequestHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+            xmlHttp.setRequestHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+            xmlHttp.send(null);
+            var cont = xmlHttp.responseText;
+            r.style.setProperty(data, "'" + cont + "'");
+            console.log(xmlHttp.responseText);
+        }
+
+        async function getText(file) {
+            let x = await fetch(file);
+            let y = await x.text();
+            console.log(y);
+            r.style.setProperty("--alert", "'" + y + "'");
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition);
+                console.log("kkk");
+            } else {
+                r.style.setProperty("--gps", "'" + "none" + "'");
+                console.log("ll");
+            }
+        }
+
+        function showPosition(position) {
+            r.style.setProperty(
+                "--gps",
+                "'Latitude: " +
+                position.coords.latitude +
+                " Longitude:  " +
+                position.coords.longitude +
+                "'"
+            );
+            console.log(position.coords.latitude + "," + position.coords.longitude);
+        }
+
+        getLocation();
+        // setInterval(function () { getLocation() }, 1500);
+        setInterval(function () {
+            getText("http://192.168.1.1/alert");
+        }, 1000);
+    </script>
+</body>
+
+</html>
